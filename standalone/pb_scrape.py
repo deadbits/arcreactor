@@ -62,7 +62,6 @@ def search_raw(data, post_id):
             print("     post:\t%s" % post_id)
             print("     data:\t%s" % data)
 
-
 def menu():
     print(" help  \tdisplay this command menu")
     print(" gather\tcollect new posts from pastebin.com/archive")
