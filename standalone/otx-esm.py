@@ -36,7 +36,7 @@ def check_format(l):
     # this isn't even really needed, i don't think but just in case..
     r = re.compile("^[+-]?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#\d\d?#\d\d?#.*#.*#.*#.*#.*$")
     if l != "":
-        if not r.match(l)
+        if not r.match(l):
             return False
     return True
 
@@ -49,7 +49,7 @@ def gather_data():
                 # snort format is: ip-address # message
                 d = line.split("#")
                 addr, info = d[0], d[1]
-                print("[~] sending syslog event for %s - %s" % (info, addr)
+                print("[~] sending syslog event for %s - %s" % (info, addr))
                 cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['rep'])
                 send_syslog(cef)
     except:
