@@ -50,8 +50,10 @@ def gather_data():
                 d = line.split("#")
                 addr, info = d[0], d[1]
                 print("[~] sending syslog event for %s - %s" % (info, addr))
-                cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['rep'])
+                cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['otx'])
                 send_syslog(cef)
+            else:
+                print("[!] error parsing data from %s" % config['otx'])
     except:
         print("[!] error retrieving otx database")
         sys.exit(1)
