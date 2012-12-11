@@ -32,6 +32,8 @@ def send_syslog(msg):
     sock.close()
 
 def check_format(l):
+    # this function from AlienVault's original otx-arcsight.py script
+    # this isn't even really needed, i don't think but just in case..
     r = re.compile("^[+-]?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#\d\d?#\d\d?#.*#.*#.*#.*#.*$")
     if l != "":
         if not r.match(l)
@@ -39,6 +41,7 @@ def check_format(l):
     return True
 
 def gather_data():
+    # why anyone would use urllib when we have the requests lib, idk.
     data = requests.get(config['otx']).content
     try:
         for line in data.split("\n"):
