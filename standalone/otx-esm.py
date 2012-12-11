@@ -20,6 +20,7 @@ config = {
     # syslog port
     'port': '512'
 }
+count = 0
 
 def send_syslog(msg):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -47,6 +48,7 @@ def gather_data():
                     print("[~] sending syslog event for %s - %s" % (info, addr))
                     cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['otx'])
                     send_syslog(cef)
+                    count += 1
                 except IndexError:
                     continue
     except:
@@ -68,5 +70,7 @@ print("[~] starting collecting of OTX reputation database...")
 # change this to add a simple time.sleep(3600)
 # and repeat the gather_data() function
 gather_data()
+print("[*] collection complete.")
+print("[*] %d unique events sent." % count)
 
 
