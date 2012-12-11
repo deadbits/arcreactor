@@ -46,7 +46,7 @@ def gather_data():
                     d = line.split("#")
                     addr, info = d[0], d[1]
                     print("[~] sending syslog event for %s - %s" % (info, addr))
-                    cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['otx'])
+                    cef = 'CEF:0|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['otx'])
                     send_syslog(cef)
                     count += 1
                 except IndexError:
