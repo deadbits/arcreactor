@@ -59,7 +59,7 @@ def gather_data():
 
 print("\n\n")
 print("\t open-source data gathering ")
-print("\t   source >> pastebin.com   ")
+print("\t   source >> alienvault.com   ")
 print("\t    author: ohdae [ams] ")
 print("\n\thttp://github.com/ohdae/arcreactor")
 print("\n\n")
