@@ -28,32 +28,27 @@ def send_syslog(msg):
     # data = '<%d>%s' % (level + facility*8, message)
     # change this if you feel the need
     data = '<%d>%s' % (29, msg)
-    sock.sendto(data, (config['host'], config['port']))
+    sock.sendto(data, (config['host'], int(config['port'])))
     sock.close()
-
-def check_format(l):
-    # this function from AlienVault's original otx-arcsight.py script
-    # this isn't even really needed, i don't think but just in case..
-    r = re.compile("^[+-]?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#\d\d?#\d\d?#.*#.*#.*#.*#.*$")
-    if l != "":
-        if not r.match(l):
-            return False
-    return True
 
 def gather_data():
     # why anyone would use urllib when we have the requests lib, idk.
     data = requests.get(config['otx']).content
     try:
+        print("[~] attempting to parse reputation data...")
         for line in data.split("\n"):
-            if check_format(line) and line != "":
-                # snort format is: ip-address # message
-                d = line.split("#")
-                addr, info = d[0], d[1]
-                print("[~] sending syslog event for %s - %s" % (info, addr))
-                cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['otx'])
-                send_syslog(cef)
-            else:
-                print("[!] error parsing data from %s" % config['otx'])
+            # we really dont need that format checking function.
+            # lets just look for comments and blank lines first then parse
+            if not line.startswith("#") and line != "":
+                try:
+                    # snort format is: ip-address # message
+                    d = line.split("#")
+                    addr, info = d[0], d[1]
+                    print("[~] sending syslog event for %s - %s" % (info, addr))
+                    cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['otx'])
+                    send_syslog(cef)
+                except IndexError:
+                    continue
     except:
         print("[!] error retrieving otx database")
         sys.exit(1)
