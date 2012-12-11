@@ -47,7 +47,7 @@ def gather_data():
                 d = line.split("#")
                 addr, info = d[0], d[1]
                 print("[~] sending syslog event for %s - %s" % (info, addr)
-                cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, rep_server)
+                cef = 'CEF:O|OSINT|ArcReactor|1.0|100|%s|1|src=%s msg=%s' % (info, addr, config['rep'])
                 send_syslog(cef)
     except:
         print("[!] error retrieving otx database")
