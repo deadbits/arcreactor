@@ -60,11 +60,11 @@ def main():
         if len(results) > 0:
             for bad_host, info_src in results.iteritems():
                 cef = 'CEF:0|OSINT|ArcReactor|1.0|100|Known Malicious Host|1|src=%s msg=%s' % (bad_host, info_src)
-                Reactor.status("info", "Known Bad", "sending CEF syslog for %s" % bad_host)
-            Reactor.status("info", "Known Bad", "sent %d total events" % len(results))
+                reactor.status("info", "Known Bad", "sending CEF syslog for %s" % bad_host)
+            reactor.status("info", "Known Bad", "sent %d total events" % len(results))
         else:
-            Reactor.status("error", "Known Bad", "collected host list appears to be empty")
+            reactor.status("error", "Known Bad", "collected host list appears to be empty")
     else:
-        Reactor.status("error", "Known Bad", "collected source list appears to be empty")
+        reactor.status("error", "Known Bad", "collected source list appears to be empty")
 
 

@@ -23,7 +23,7 @@ watch_list = []
 regex = re.compile('<td><img src="/i/t.gif" .*?<a href="/(.*?)">(.*?)</a></td>.*?<td>(.*?)</td>', re.S)
 
 def load_words():
-    watch_list = reactor.load_text(reactor.PATH_CONF+"/watchlist.conf")
+    watch_list = reactor.load_keywords(reactor.PATH_CONF+"/watchlist.conf")
     if len(watch_list) > 0:
         reactor.status("info", "pastebin", "%d keywords added to watch list" % (len(watch_list)))
         return True
