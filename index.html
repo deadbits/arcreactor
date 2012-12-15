@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>ArcReactor by ohdae</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">ArcReactor</h1>
+        <p class="header">Open-Source Intelligence for SIEMs!</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/ohdae/arcreactor/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/ohdae/arcreactor/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/ohdae/arcreactor">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/ohdae">ohdae</a></p>
+
+
+      </header>
+      <section>
+        <h3>Overview</h3>
+
+<p>ArcReactor is a free, open-source application used to collect OSINT (Open-Source Intelligence) data and send this data to a SIEM, such as ArcSight ESM or Splunk. This application is meant to be used by security analysts and/or engineers who want to expand and compliment their event correlation, attack prediction and overall threat insight by making use of open-source sources such as known bad host lists, honeypot information, exploit and vulnerability trackers, and social media.</p>
+
+<h3>Why OSINT?</h3>
+
+<p>Open-Source Intelligence can be highly useful in a SOC or NCSIRT type environment, where analysts and responders are required to track, analyze and react to threats. OSINT can often be a great source of information on emerging threats and even specific attacks before they happen. Proper collection, correlation and use of this information can be used to better predict future attacks, assist in attack attribution and provide a more in-depth view of threat actor groups. 
+By feeding this information into your SIEM, you can have more tangible, actionable events.</p>
+
+<h3>ArcReactor Design</h3>
+
+<p>ArcReactor collects information from dozens of public sources by using a combination of live monitoring and web-scraping. Each area of information is grouped into a module that can either be executed on it's own or ran as part of a larger data collection campaign. All of the information collected is parsed into CEF or JSON format and sent via Secure Syslog to your SIEM collectors. 
+Everything is completely customizable to fit your use case- modules executed, how often collection occurs, keywords to monitor and SIEM settings. ArcReactor also has many API-like wrappers for commonly used functions throughout the application. This makes it very easy for users to write their own collection modules and expand on the program.</p>
+
+<h3>Collection Modules</h3>
+
+<p>This is the current list of collection modules. You can expand upon these or build your own, as well.</p>
+
+<ul>
+<li>Known Bad Hosts
+
+<ul>
+<li>utilizes dozens of sources to pull down known malicious IP addresses, domain names, proxies, TOR exit nodes, known bad file hashes and other attacker information</li>
+</ul>
+</li>
+<li>OTX Reputation 
+
+<ul>
+<li>scrapes AlienVault's OTX (Open Threat Exchange) Reputation database for known attacker information</li>
+</ul>
+</li>
+<li>Twitter 
+
+<ul>
+<li>monitor Twitter feeds for custom keywords in your watch list</li>
+</ul>
+</li>
+<li>Pastebin
+
+<ul>
+<li>monitor new Pastebin posts for custom keywords in your watch list</li>
+</ul>
+</li>
+<li>Facebook
+
+<ul>
+<li>monitor Facebook posts for custom keywords in your watch list</li>
+</ul>
+</li>
+<li>Kippo
+
+<ul>
+<li>collect logs and attacker information from your Kippo honeypots</li>
+</ul>
+</li>
+<li>Reddit
+
+<ul>
+<li>monitor Reddit posts and users for custom keywords in your watch list</li>
+</ul>
+</li>
+<li>Exploits 
+
+<ul>
+<li>monitor exploit, malware and vulnerability trackers for new threats, CVEs and public exploits</li>
+</ul>
+</li>
+</ul><h3>Running ArcReactor</h3>
+
+<p>There are three ways to run ArcReactor. </p>
+
+<ul>
+<li><p>Standard command line script that will read the SIEM, sources and keyword settings from a config file, execute all of the collection modules and automatically send all data collected to your SIEM. It can either be run as a daemon or with the status output sent to your terminal. Either way, all the status, informational and error output is sent to a log file.</p></li>
+<li><p>Interactive ArcReactor console. This is the preferred method of use as it allows much more fine-tuned control over the modules and the collection process as a whole. Using the interactive console, you can select which modules to run, modify configuration settings, interact and monitor running tasks, and setup collection as either a recurring process or as 'live', on-going collection. All information and errors are also logged.</p></li>
+<li><p>Stand-alone collection scripts are available in the standalone/ directory. Each module has a counter-part that can be ran on it's own. These are useful if you want to launch a specific task quickly.</p></li>
+</ul><h3>Authors &amp; Contributing</h3>
+
+<p>Adam Swanda, <a href="https://github.com/ohdae" class="user-mention">@ohdae</a>, is the core developer of ArcReactor. As this is a free and open-source project, public contributions are encouraged. Anything from feature requests, bug fixes, complaints or new modules. You can enter bugs and issues into the Github repo's issue tracker or fork your own repo for pull requests.</p>
+
+<h3>Documentation &amp; Support</h3>
+
+<p>Full documentation will soon be available on the Github repo's wiki and also included in the docs/ directory of the application.</p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
