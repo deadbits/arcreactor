@@ -78,14 +78,7 @@ class Session(object):
         sources = reactor.load_sources(reactor.PATH_CONF+'/sources.cfg')
         options = reactor.load_config(reactor.PATH_CONF+'/reactor.cfg')
         # try to send a syslog event to make sure our connector is okay
-        if reactor.test_syslog():
-            reactor.status('info', 'arcreactor', 'syslog settings okay')
-            reactor.status('info', 'arcreactor', 'starting console now')
-            self.console()
-        else:
-            reactor.status('error', 'arcreactor', 'syslog test message failed')
-            print('[!] verify that your syslog receiver is accepting connections')
-            print('    if this is not fixed, all events sent by the collection modules will fail.')
+        self.console()
 
     def kill_session(self):
         reactor.status('info', 'arcreactor', 'shutting down ArcReactor console')

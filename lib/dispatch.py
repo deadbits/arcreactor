@@ -62,7 +62,7 @@ class Jobs:
             elif type in job_stats.keys():
                 print('\n%s => ' % type)
                 # iterate through the key/value pairs for that job type
-                for key, value n job_stats[type].iteritems():
+                for key, value in job_stats[type].iteritems():
                     print('%s:  \t%s' % (key, value))
             else:
                 reactor.status('info', 'arcreactor', 'cannot find job %s' % type)
@@ -73,7 +73,8 @@ class Jobs:
 class Module:
     def __init__(self):
         # this entire class is for interacting with the collection modules
-        
+        self.running = 0
+        self.queued = 0
 
     def run_knownbad(self):
         # launch the knownbad.py module
@@ -94,7 +95,7 @@ class Module:
                     self.cef = 'CEF:0|OSINT|ArcReactor|1.0|100|Known Malicious Host|1|src=%s msg=%s' % (self.host, self.source)
                     reactor.send_syslog(self.cef)
                     # add one to the event counter per syslog event sent
-                    job_stats['knownbad'] = { 'events': job_stats['knownbad']['events'] += 1}
+                    job_stats['knownbad'] = { 'events': job_stats['knownbad']['events'] + 1}
 
             job_stats['knownbad'] = { 'status': 'finished', 'message': 'finished successfully', 'ended': str(datetime.now()).split('.')[0] }
         job_stats['knownbad'] = { 'message': 'finished with errors', 'ended': str(datetime.now()).split('.')[0] }
@@ -123,7 +124,7 @@ class Module:
                     job_stats['pastebin'] = { 'message': 'searching post %s' % post }
                     # the search_raw function is called from within gather_content
                     pastebin.gather_content(post)
-            job_stats['pastebin'] = { 'events': len(pastebin.found) ]}
+            job_stats['pastebin'] = { 'events': len(pastebin.found) }
             if len(pastebin.found) > 0:
                 for self.post_id, self.data in pastebin.found.iteritems():
                     job_stats['pastebin'] = { 'message': 'sending syslog events' }
