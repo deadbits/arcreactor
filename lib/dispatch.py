@@ -25,6 +25,12 @@ job_stats = {}
 # keep track of total events sent per module
 events = {}
 
+class Stats:
+    def __init__(self):
+        self.blah = 'barf'
+
+    
+
 class Command:
     def __init__(self):
         self.cmd = ''

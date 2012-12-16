@@ -19,6 +19,9 @@ import signal
 import commands
 
 readline.parse_and_bind('tab: complete')
+# not sure what to do here. i want to only load the keywords and sources one time per session
+# but i was having trouble loading them during the console startup. right now it is very repetitive
+# and this definitely needs to be fixed. 
 keywords = []
 sources = []
 options = {}
@@ -63,17 +66,26 @@ class Completer:
 
 class Session(object):
     def __init__(self):
+        # blah this doesnt actually do anything atm.
         signal.signal(signal.SIGINT, reactor.signal_handler)
 
     def new(self):
-        # perform session start-up
+        # perform session start-up checks and loads
         reactor.status('info', 'arcreactor', 'initializing new console session')
         reactor.status('info', 'arcreactor', 'loading configuration files')
         # load the config files into this module
         keywords = reactor.load_keywords(reactor.PATH_CONF+'/keywords.cfg')
         sources = reactor.load_sources(reactor.PATH_CONF+'/sources.cfg')
-        options = reactor.load_config(reactor.PATH_CONF+'/syslog.cfg')
-        self.console()
+        options = reactor.load_config(reactor.PATH_CONF+'/reactor.cfg')
+        # try to send a syslog event to make sure our connector is okay
+        if reactor.test_syslog():
+            reactor.status('info', 'arcreactor', 'syslog settings okay')
+            reactor.status('info', 'arcreactor', 'starting console now')
+            self.console()
+        else:
+            reactor.status('error', 'arcreactor', 'syslog test message failed')
+            print('[!] verify that your syslog receiver is accepting connections')
+            print('    if this is not fixed, all events sent by the collection modules will fail.')
 
     def kill_session(self):
         reactor.status('info', 'arcreactor', 'shutting down ArcReactor console')
@@ -86,10 +98,6 @@ class Session(object):
             return True
         return False
 
-    def dispath_command(self, cmd):
-        if ' ' in cmd:
-            cmd = cmd.split(' ')
-
     def pre_command(self, cmd):
         # pre_command takes care of the basic functions.
         # this handles alot of the simple, non-collection and
@@ -100,7 +108,8 @@ class Session(object):
         elif cmd == 'help':
             print('ArcReactor Commands')
             for key, value in help.iteritems():
-                print('%s\t\t\t%s' % (key, value))
+                # this is really ugly. i need a better way to align the help menu.
+                print('%s\t\t%s' % (key, value))
             print('\n')
         elif cmd == 'clear': 
             os.system('clear')
@@ -121,12 +130,12 @@ class Session(object):
                     print src
             else: print('[*] source list is empty')
         else:
-            self.dispatch_command()
+            dispatch.receive(cmd)
 
     def console(self):
         print reactor.ascii
         print('Welcome to the ArcReactor console!')
-        print('type 'help' to get started\n')
+        print('type `help` to get started\n')
 
         while True:
             completer = Completer()
@@ -136,7 +145,7 @@ class Session(object):
             if self.check_command(cmd):
                 self.pre_command(cmd)
             else:
-                print('[!] '%s' is not a valid command. type 'help' for assistance')
+                print('[!] %s is not a valid command. type `help` for assistance')
             
 
 

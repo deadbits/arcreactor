@@ -132,7 +132,7 @@ def send_syslog(message):
     # 'notice' is the default event. 3 + 5 * 8
     # change this is need be
     data = '<%d>%s' % (29, message)
-    sock.sendto(data, (app_opts['host'], int(app_opts['port'])))
+    sock.sendto(data, (opts['siem_host'], int(opts['siem_port'])))
     sock.close()
 
 def test_syslog():
