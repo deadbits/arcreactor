@@ -1,0 +1,98 @@
+
+app_info = {
+    :name       => 'ArcReactor',
+    :version    => '1.0 - beta',
+    :author     => 'ohdae [ams]',
+    :website    => 'https://github.com/ohdae/arcreactor',
+    :contact    => 'ohdae@zeroharbor.org'
+}
+
+
+Overview
+========
+ArcReactor is a free, open-source application used to collect OSINT (Open-Source Intelligence) data
+and send this data to a SIEM, such as ArcSight ESM or Splunk. This application is meant to be used by
+security analysts and/or engineers who want to expand and compliment their event correlation, attack
+prediction and overall threat insight by making use of open-source sources such as known bad host lists,
+honeypot information, exploit and vulnerability trackers, and social media.
+
+
+Why OSINT?
+==========
+Open-Source Intelligence can be highly useful in a SOC or NCSIRT type environment, where analysts and 
+responders are required to track, analyze and react to threats. OSINT can often be a great source of 
+information on emerging threats and even specific attacks before they happen. Proper collection, 
+correlation and use of this information can be used to better predict future attacks, assist in attack
+attribution and provide a more in-depth view of threat actor groups. By feeding this information into 
+your SIEM, you can have more tangible, actionable events.
+
+
+ArcReactor Design
+==================
+ArcReactor collects information from dozens of public sources by using a combination of live monitoring
+and web-scraping. Each area of information is grouped into a module that can either be executed on it's
+own or ran as part of a larger data collection campaign. All of the information collected is parsed into
+CEF or JSON format and sent via Secure Syslog to your SIEM collectors. Everything is completely customizable
+to fit your use case- modules executed, how often collection occurs, keywords to monitor and SIEM settings.
+ArcReactor also has many API-like wrappers for commonly used functions throughout the application. 
+This makes it very easy for users to write their own collection modules and expand on the program.
+
+
+Collection Modules
+==================
+* Known Bad Hosts
+    utilizes dozens of sources to pull down known malicious IP addresses, domain names, proxies, 
+    TOR exit nodes, known bad file hashes and other attacker information
+
+* OTX Reputation
+    scrapes AlienVault's OTX (Open Threat Exchange) Reputation database for known attacker information
+
+* Twitter
+    monitor Twitter feeds for custom keywords in your watch list
+
+* Pastebin
+    monitor new Pastebin posts for custom keywords in your watch list
+
+* Facebook
+    monitor Facebook posts for custom keywords in your watch list
+
+* Kippo
+    collect logs and attacker information from your Kippo honeypots
+
+* Reddit
+    monitor Reddit posts and users for custom keywords in your watch list
+
+* Exploits
+    monitor exploit, malware and vulnerability trackers for new threats, CVEs and public exploits
+
+
+Running ArcReactor
+===================
+There are three ways to run ArcReactor.
+
+* Standard command line script that will read the SIEM, sources and keyword settings from a config file,
+  execute all of the collection modules and automatically send all data collected to your SIEM. 
+  It can either be run as a daemon or with the status output sent to your terminal.
+  All the status, informational and error output is sent to a log file.
+
+* Interactive ArcReactor console. This is the preferred method of use as it allows much more fine-tuned
+  control over the modules and the collection process as a whole. Using the interactive console, you can
+  select which modules to run, modify configuration settings, interact and monitor running tasks, and setup
+  collection as either a recurring process or as 'live', on-going collection. All information and errors are 
+  also logged.
+
+* Stand-alone collection scripts are available in the standalone/ directory. Each module has a counter-part
+  that can be ran on it's own. These are useful if you want to launch a specific task quickly.
+
+
+Authors & Contributing
+======================
+Adam Swanda, @ohdae, is the core developer of ArcReactor. As this is a free and open-source project,
+public contributions are encouraged. Anything from feature requests, bug fixes, complaints or new modules.
+You can enter bugs and issues into the Github repo's issue tracker or fork your own repo for pull requests.
+
+
+Documentation & Support
+=======================
+Full documentation will soon be available on the Github repo's wiki and also included in the docs/ directory of the application.
+
