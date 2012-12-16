@@ -37,7 +37,7 @@ def gather_data(source):
         data = re.findall(ip_regex, raw)
         if data == "":
             data = re.findall(dom_regex, raw)
-        return '%s - %s' % (data, source)
+        return data, source
     except:
         reactor.satus('error', 'known bad', 'failed to retrieve hosts from %s' % source)
 
