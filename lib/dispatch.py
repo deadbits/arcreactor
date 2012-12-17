@@ -14,6 +14,7 @@
 import os, sys
 import commands
 from datetime import datetime
+import atexit
 import threading
 import reactor
 import pastebin
@@ -25,13 +26,42 @@ import knownbad
 #import reddit
 #import kippo
 
+"""
+this module is under heavy development.
+    - receive command from console.py interaction
+    - determine which type of command we received
+        * module execution (start, stop, data)
+        * configuration (config *) <- these might go somewhere else
+        * job management (info tasks, info reactor, etc)
+
+    * if we get a module execution command:
+        - create new job/workers to handle execution of that module
+           * we can either send to bg and continue to interact w/ console
+            or just run it, watch progress and wait until complete
+        - job + reactor stats are updated to reflect mod being exec'd 
+        - continue to update stats along the way
+        - verify successful completion
+        - remove job from running list and free up workers
+    * configuration commands can be a simple ConfigParser function to update
+      our cfg's and reload the files
+    * job management stats are updated from the module executions so we simply
+      read and print the stats.
+      keep track of: running, status, time started/ended, total events sent,
+      events sent per mod, format usage, syslog info, etc. 
+
+TODO:
+    - job clean-up functions
+    - command receive function
+    - build job execution queue
+    - move over finished multithreading functions (testing/dispatch/multi.py)
+    - standardize data output from modules
+"""
 
 job_stats = {}
 """
-the job_stats hash keeps track of which module is doing what by using nested
-hashes. the nested keys are: status, message, started, ended, events, workers.
+job_stats keeps track of which module is doing what. 
 this hash is also used when we pull and output the job statistics using the 'info' cmd. 
-we end up with something like this:
+example:
 job_stats = {
     'pastebin': {
         'status': 'running',
@@ -41,20 +71,22 @@ job_stats = {
         'events': 0,
     }
 }
-when jobs are finished, the entries are removed from job_stats. the only entries shown
-will be either running or paused jobs. 
 """
 
 class Jobs:
     def __init__(self):
         """
-        The 'Jobs' class is used to handle the execute and management
-        of all major ArcReactor tasks. Here we spin up tasks, keep track
-        of running tasks and make sure everything exits correctly.
+        This class is used to manage all running modules, handle statistics,
+        ensure proper execution and clean-up and so on.
         """
         self.running = []
 
     def start_module(self, module):
+        """
+        this is really just a placeholder to give a general idea of how this
+        should work. use this function to start modules/jobs, track what is 
+        running, assign workers if needed, etc.
+        """
         if self.module in reactor.module.keys() and module not in self.running:
             reactor.status('info', 'arcreactor', 'starting collection module %s' % self.module)
             if self.module == 'pastebin':
@@ -69,7 +101,8 @@ class Jobs:
 
     def kill_all(self):
         """
-        this function will safely kill all running jobs
+        this function will safely kill all running jobs.       
+        should be registered as an atexit function when complete.
         """
 
     def kill_job(self, job):

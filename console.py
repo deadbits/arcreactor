@@ -8,8 +8,13 @@
 # here we provide the basic console functionality such
 # as command input & output, editing configuration files,
 # preliminary command verification and sending commands
-# to the 
+# to the dispatch module
 #
+# TODO:
+#   - config edit commands (configparser)
+#   - fix keyword/source loading issues
+#   - rewrite cmd verification and dispatch interaction
+#   - create better environment check before starting new session
 
 from lib import reactor
 from lib import dispatch 

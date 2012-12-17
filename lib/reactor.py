@@ -10,6 +10,10 @@
 # files and some preliminary database
 # interaction.
 #
+# TODO:
+#   - move over finished json format function (testing/data/json.py)
+#
+
 
 import logging
 import socket
@@ -145,12 +149,11 @@ def http_request(url):
         if request.status_code == 200:
             return request.content
         else:
-            status('warn', 'arcreactor', 'http request failed for url %s. returned status code %s' % (url, request.status_code)
+            status('warn', 'arcreactor', 'http request failed for url %s. returned status code %s' % (url, request.status_code))
             return False
     except:
         status('warn', 'arcreactor', 'http request failed for url %s' % url)
         return False
-
 
 def send_syslog(message):
     # create socket for sending syslog events
