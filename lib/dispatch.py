@@ -96,7 +96,7 @@ class Jobs:
             elif self.module == 'knownbad':
                 Module.run_knownbad()
             else:
-            elif self.module == 'twitter':
+                pass
 
 
     def kill_all(self):
