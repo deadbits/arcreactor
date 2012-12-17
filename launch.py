@@ -1,25 +1,22 @@
 #!/usr/bin/env python
 
 from lib import reactor
-import readline
-import sys, os 
-import commands
-from optparse import OptionParser
+from lib import dispatch 
+import console
+import argparse
+import sys, os
 
-# obviously incomplete file
-# this will be the main launcher utility
-# might even remove this completely and just offer
-# two scripts, one for the console and one for command line control
-# meh meh meh.
+# the usage block should explain itself.
+# you *must* run this when starting ArcReactor, you can't run console.py by itself.
+# eventually this whole application will be turned into an optional service and this
+# launcher will control the 'start', 'stop', 'restart', etc commands for the service.
 
 usage = """
 
-Usage: ./launch.py [--interactive] [--collect] [--daemon] [--no-usage]
-
 This is the main launcher for ArcReactor.
-All of the output collected by the modules below is parsed into CEF format and sent via syslog
-to an ArcSight manager or connector appliance. The configuration file for sending these events
-is located in the /opt/arcreactor/conf directory.
+
+Below is a full list of all available modules and explanations of both ArcReactor execution modes.
+For further documentation or assistance, please refer to the online Wiki or the 'docs' directory.
 
 Modules:
 malicious  \tgathers known malicious ip addresses and hostnames from public sources
@@ -38,7 +35,6 @@ Options:
     your data collection.
     This is the suggested method of use.
 
-
 --collect
     This command will start all data collection tasks using the current configuration files.
     ArcReactor will attempt to execute each of the available modules and send syslog events for
@@ -50,5 +46,40 @@ Options:
 
 
 """
+
+print usage
+parser = argparse.ArgumentParser()
+parser.add_argument("--interactive", help="start interactive console", action="store_true")
+parser.add_argument("--collect", help="execute all collection modules", action="store_true")
+parser.add_argument("--daemon", help="run --collect as background process", action="store_true")
+args = parser.parse_args()
+
+if args.interactive:
+    session = console.Session()
+    reactor.start_logger()
+    session.new()
+elif args.collect:
+    if args.daemon:
+        background_job = True
+    launcher = dispatch.Module()
+    jobs = dispatch.Jobs()
+    reactor.status('info', 'arcreactor', 'launching all collection modules')
+    launcher.run_knownbad()
+    launcher.run_pastebin()
+    launcher.run_otx()
+    reactor.status('info', 'arcreactor', 'all collection modules finished')
+    print('[*] Collection Statistics: ')
+    jobs.get_stats()
+    sys.exit(0)
+else:
+    print('[!] arcreactor - invalid argument!')
+    sys.exit(1)
+
+
+
+
+
+
+
 
 

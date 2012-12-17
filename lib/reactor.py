@@ -26,9 +26,20 @@ PATH_CONF = '/opt/arcreactor/conf'
 PATH_MODS = '/opt/arcreactor/lib'
 PATH_HIST = '/opt/arcreactor/.console_history'
 
+modules = {
+    'pastebin': 'monitor Pastebin archive for custom keywords from your watch list',
+    'otx': 'collect known malicious hosts and information from AlienVaults OTX reputation database',
+    'twitter': 'monitor Twitter feeds for custom keywords from your watch list',
+    'facebook': 'monitor Facebook posts for custom keywords from your watch list',
+    'knownbad': 'scrapes dozens of public sources for known malicious IP addresses, domain names, open proxies, TOR exit nodes and other attacker information',
+    'exploits': 'monitor exploit, malware and vulnerability trackers for new threats, CVEs and recently released exploits',
+    'kippo': 'collect log and attacker information from your Kippo honeypots',
+    'reddit': 'monitor Reddit posts and users for custom keywords from your watch list',
+    'malware': 'scrape public sources for known malicious websites, exploit kit domains, phishing domains, malware file hashes and other malware related information'
+}
+
 # define our config parser
 config = ConfigParser.ConfigParser()
-
 
 ascii = '''
 
@@ -44,7 +55,7 @@ $$ |  $$ |$$ |      $$       |$$ |  $$ |$$       |$$    $$ |$$       |  $$  $$/ 
 $$/   $$/ $$/        $$$$$$$/ $$/   $$/  $$$$$$$/  $$$$$$$/  $$$$$$$/    $$$$/   $$$$$$/  $$/       
                                                                                                     
                                     ArcReactor [version 1.0]
-                                        ohdae [ams] - 2012
+                                        ohdae - 2012
                                 https://github.com/ohdae/arcreactor
 
 '''   

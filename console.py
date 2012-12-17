@@ -81,6 +81,18 @@ class Session(object):
         self.console()
 
     def kill_session(self):
+        if len(dispatch.job_stats) > 0:
+            print('[*] %d jobs are still running.' & len(dispatch.job_stats))
+            print('are you sure you want to exit?')
+            self.answer = raw_input('[y/n]')
+            if self.answer == 'y': 
+                pass
+            elif self.answer == 'n':
+                print('[*] returning to ArcReactor console')
+                self.console()
+            else:
+                print('[!] invalid answer. returning to ArcReactor console.')
+                self.console()
         reactor.status('info', 'arcreactor', 'shutting down ArcReactor console')
         sys.exit(0)
 
@@ -99,7 +111,7 @@ class Session(object):
         if cmd == 'quit' or cmd == 'exit': 
             self.kill_session()
         elif cmd == 'help':
-            print('ArcReactor Commands')
+            print('\nArcReactor Commands')
             for key, value in help.iteritems():
                 # this is really ugly. i need a better way to align the help menu.
                 print('%s\t\t%s' % (key, value))
@@ -122,6 +134,10 @@ class Session(object):
                 for src in sources:
                     print src
             else: print('[*] source list is empty')
+        elif cmd == 'modules':
+            print('\nAvailable Collection Modules')
+            for self.mod_name, self.mod_info in reactor.modules.iteritems():
+                print('%s\t\t%s' % (self.mod_name, self.mod_info))
         else:
             dispatch.receive(cmd)
 

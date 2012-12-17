@@ -1,0 +1,24 @@
+Development Notes
+=================
+
+
+Console Commands =>
+    'help': 'display this menu',
+    'quit': 'exit the console',
+    'exit': 'exit the console',
+    'exec': 'execute os command',
+    'about': 'display basic information',
+    'clear': 'clears the screen',
+    'config sources': 'manage osint sources',
+    'config keywords': 'manage your keywords',
+    'config syslog': 'manage siem syslog settings',
+    'modules': 'list all collection module information',
+    'keywords': 'show loaded keywords',
+    'start all': 'start all available modules',
+    'stop all': 'stop all running modules',
+    'start <module>': 'launch the selected module',
+    'stop <module>': 'stop the selected module',
+    'info tasks': 'view stats on running and queued tasks',
+    'info reactor': 'view general ArcReactor stats',
+    'data <module>': 'view information on data collected by module',
+    'dashboard': 'launch web dashboard [experimental]'
