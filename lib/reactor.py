@@ -130,12 +130,27 @@ def load_sources(file_path):
 
 def status(level, module, message):
     msg = '%s - %s' % (module, message)
-    if level == 'error':
+    if level == 'warn':
         print('[!] %s' % msg)
-        logging.error(msg)
+        logging.warn(msg)
     else:
         print('[~] %s' % msg)
         logging.info(msg)
+
+def http_request(url):
+    try:
+        headers = { 'User-Agent': ''}
+        headers = {'content-type': 'application/json'}
+        request = requests.get(url)
+        if request.status_code == 200:
+            return request.content
+        else:
+            status('warn', 'arcreactor', 'http request failed for url %s. returned status code %s' % (url, request.status_code)
+            return False
+    except:
+        status('warn', 'arcreactor', 'http request failed for url %s' % url)
+        return False
+
 
 def send_syslog(message):
     # create socket for sending syslog events

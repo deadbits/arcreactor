@@ -66,7 +66,6 @@ class Completer:
 
 class Session(object):
     def __init__(self):
-        # blah this doesnt actually do anything atm.
         signal.signal(signal.SIGINT, reactor.signal_handler)
 
     def new(self):

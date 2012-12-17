@@ -13,13 +13,17 @@
 
 import os, sys
 import commands
-import reactor
 from datetime import datetime
-#import exploits
-import otx
+import threading
+import reactor
 import pastebin
+import otx
+import knownbad
+#import exploits
+#import twitter
+#import facebook
 #import reddit
-import re, string
+#import kippo
 
 
 job_stats = {}
@@ -35,7 +39,6 @@ job_stats = {
         'started': '2012-12-16 12:34:20',
         'ended': '',
         'events': 0,
-        'workers': 1
     }
 }
 when jobs are finished, the entries are removed from job_stats. the only entries shown
@@ -49,6 +52,31 @@ class Jobs:
         of all major ArcReactor tasks. Here we spin up tasks, keep track
         of running tasks and make sure everything exits correctly.
         """
+        self.running = []
+
+    def start_module(self, module):
+        if self.module in reactor.module.keys() and module not in self.running:
+            reactor.status('info', 'arcreactor', 'starting collection module %s' % self.module)
+            if self.module == 'pastebin':
+                Module.run_pastebin()
+            elif self.module == 'otx':
+                Module.run_otx()
+            elif self.module == 'knownbad':
+                Module.run_knownbad()
+            else:
+            elif self.module == 'twitter':
+
+
+    def kill_all(self):
+        """
+        this function will safely kill all running jobs
+        """
+
+    def kill_job(self, job):
+        """
+        this function will safely kill an individual job
+        """
+
     def get_stats(self, type='all'):
         # check if we have any jobs running or paused
         if len(job_stats) > 0:
@@ -95,8 +123,7 @@ class Module:
                     self.cef = 'CEF:0|OSINT|ArcReactor|1.0|100|Known Malicious Host|1|src=%s msg=%s' % (self.host, self.source)
                     reactor.send_syslog(self.cef)
                     # add one to the event counter per syslog event sent
-                    job_stats['knownbad'] = { 'events': job_stats['knownbad']['events'] + 1}
-
+                    job_stats['knownbad'] = { 'events': job_stats['knownbad']['events'] + 1 }
             job_stats['knownbad'] = { 'status': 'finished', 'message': 'finished successfully', 'ended': str(datetime.now()).split('.')[0] }
         job_stats['knownbad'] = { 'message': 'finished with errors', 'ended': str(datetime.now()).split('.')[0] }
 
