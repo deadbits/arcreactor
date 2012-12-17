@@ -33,11 +33,10 @@ def load_sources():
 def gather_data(source):
     try:
         reactor.status('info', 'known bad', 'retrieving hosts from %s' % source)
-        if reactor.http_request(source):
-            raw = requests.get(source).content
-            data = re.findall(ip_regex, raw)
-            if data == "":
-                data = re.findall(dom_regex, raw)
+        raw = requests.get(source).content
+        data = re.findall(ip_regex, raw)
+        if data == "":
+            data = re.findall(dom_regex, raw)
         return data, source
     except:
         reactor.satus('error', 'known bad', 'failed to retrieve hosts from %s' % source)
