@@ -23,39 +23,43 @@ import readline
 import signal
 import commands
 
-readline.parse_and_bind('tab: complete')
-# not sure what to do here. i want to only load the keywords and sources one time per session
-# but i was having trouble loading them during the console startup. right now it is very repetitive
-# and this definitely needs to be fixed. 
+readline.parse_and_bind('tab: complete') 
 keywords = []
 sources = []
 options = {}
 prompt = 'reactor >> '
 help = {
-    'help': 'display this menu',
-    'quit': 'exit the console',
-    'exit': 'exit the console',
-    'exec': 'execute os command',
-    'about': 'display basic information',
-    'clear': 'clears the screen',
-    'config sources': 'manage osint sources',
-    'config keywords': 'manage your keywords',
-    'config syslog': 'manage siem syslog settings',
-    'modules': 'list all collection module information',
-    'keywords': 'show loaded keywords',
-    'start all': 'start all available modules',
-    'stop all': 'stop all running modules',
-    'start <module>': 'launch the selected module',
-    'stop <module>': 'stop the selected module',
-    'info tasks': 'view stats on running and queued tasks',
-    'info reactor': 'view general ArcReactor stats',
-    'data <module>': 'view information on data collected by module',
-    'dashboard': 'launch web dashboard [experimental]'
+    'general': {
+        'help': 'display this menu',
+        'quit': 'exit the console',
+        'about': 'display about dialog',
+        'exec': 'execute os command',
+        'modules': 'show description of all modules',
+        'keywords': 'show current watchlist keywords'
+    },
+    'configuration': {
+        'cfg syslog': 'manage siem and syslog settings',
+        'cfg sources': 'manage external sources',
+        'cfg keywords': 'manage watchlist keywords'
+    },
+    'statistics': {
+        'info tasks': 'view stats on running and queued jobs',
+        'info reactor': 'view general ArcReactor stats',
+        'data <module>': 'view information on data collected by module'
+    },
+    'collection': {
+        'start all': 'start all collection modules',
+        'stop all': 'stop all running collection modules',
+        'start <module>': 'launch selected module',
+        'stop <module>': 'stop selected module',
+        'dashboard': 'start the web dashboard [experimental]'
+    }
 }
+
 
 class Completer:
     def __init__(self):
-        self.words = [ 'help', 'quit', 'exit', 'about', 'clear', 'config', 'sources', 'keywords', 'syslog', 'modules',
+        self.words = [ 'help', 'quit', 'exit', 'about', 'clear', 'cfg', 'sources', 'keywords', 'syslog', 'modules',
             'start', 'stop', 'all', 'info', 'data', 'reactor', 'tasks', 'dashboard', 'pastebin', 'otx', 'exploits', 'twitter' ]
         self.prefix = ''
 
@@ -74,14 +78,19 @@ class Session(object):
         signal.signal(signal.SIGINT, reactor.signal_handler)
 
     def new(self):
-        # perform session start-up checks and loads
+        """
+        Initializes a new console session
+
+        Perform some simple environment checks to ensure that we can properly
+        start a new interactive session, load needed configuration files and if
+        these pass, we start our console.
+
+        """
         reactor.status('info', 'arcreactor', 'initializing new console session')
         reactor.status('info', 'arcreactor', 'loading configuration files')
-        # load the config files into this module
         keywords = reactor.load_keywords(reactor.PATH_CONF+'/keywords.cfg')
         sources = reactor.load_sources(reactor.PATH_CONF+'/sources.cfg')
         options = reactor.load_config(reactor.PATH_CONF+'/reactor.cfg')
-        # try to send a syslog event to make sure our connector is okay
         self.console()
 
     def kill_session(self):
@@ -101,43 +110,54 @@ class Session(object):
         sys.exit(0)
 
     def check_command(self, cmd):
-        # verify that command is valid. this is a super hack job.
-        # TODO: fix this horrible, ugly function
-        if cmd in help.keys() or ' ' in cmd and cmd.split(' ')[0] in help.keys():
-            return True
+        for self.title in help.keys():
+            if cmd in help[self.title].keys():
+                return True
         return False
 
     def pre_command(self, cmd):
-        # pre_command takes care of the basic functions.
-        # this handles alot of the simple, non-collection and
-        # non-statistics stuff. this way we only need to send
-        # the more actionable commands to the main dispatcher
+        """
+        Handle basic functions before we send command to dispatch.
+
+        Several commands do not need to be sent to dispatch to be executed,
+        so we take care of the more basic/static commands here and only send
+        the more actionable commands to the dispatch module.
+
+        """
         if cmd == 'quit' or cmd == 'exit': 
             self.kill_session()
         elif cmd == 'help':
-            print('\nArcReactor Commands')
-            for key, value in help.iteritems():
-                # this is really ugly. i need a better way to align the help menu.
-                print('%s\t\t%s' % (key, value))
-            print('\n')
+            print('\n\t  general')
+            for self.c, self.i in help['general'].iteritems():
+                print('{0:12} \t {1:26}'.format(self.c, self.i))
+            print('\n\t  configuration')
+            for self.c, self.i in help['configuration'].iteritems():
+                print('{0:12} \t {1:26}'.format(self.c, self.i))
+            print('\n\t  statistics')
+            for self.c, self.i in help['statistics'].iteritems():
+                print('{0:12} \t {1:26}'.format(self.c, self.i))
+            print('\n\t  collection')
+            for self.c, self.i in help['collection'].iteritems():
+                print('{0:12} \t {1:26}'.format(self.c, self.i))
         elif cmd == 'clear': 
             os.system('clear')
         elif cmd.startswith('exec'):
-            # remove 'exec' from the command and run the rest
             self.exec_output = commands.getout(' '.join(cmd.split(' ')[1:]))
             print self.exec_output
         elif cmd == 'keywords':
             if len(keywords) > 0:
                 print('\nWatch-List Keywords')
-                for word in keywords:
-                    print word
-            else: print('[*] keyword list is empty')
+                for self.word in keywords:
+                    print self.word
+            else:
+                print('[*] keyword list is empty')
         elif cmd == 'sources':
             if len(sources) > 0:
                 print('\nExternal Sources')
-                for src in sources:
-                    print src
-            else: print('[*] source list is empty')
+                for self.src in sources:
+                    print self.src
+            else: 
+                print('[*] source list is empty')
         elif cmd == 'modules':
             print('\nAvailable Collection Modules')
             for self.mod_name, self.mod_info in reactor.modules.iteritems():

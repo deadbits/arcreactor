@@ -13,9 +13,10 @@
 
 import os, sys
 import commands
+import atext
 from datetime import datetime
-import atexit
-import threading
+from multiprocessing import Process, Queue
+from Queue import *
 import reactor
 import pastebin
 import otx
@@ -76,16 +77,30 @@ job_stats = {
 class Jobs:
     def __init__(self):
         """
-        This class is used to manage all running modules, handle statistics,
-        ensure proper execution and clean-up and so on.
+        Handles job interaction tasks.
+
+        This class is responsible for the overall management and monitoring of any major tasks
+        within ArcReactor. Smaller, static functions do not need to be included within this
+        management class.
+        Features:
+            - start/stop collection modules
+            - create job queues and assign workers
+            - collect statistics on running jobs
+            - ensure safe shutdown of jobs
+
         """
         self.running = []
+        self.queue = Queue()
 
     def start_module(self, module):
         """
-        this is really just a placeholder to give a general idea of how this
-        should work. use this function to start modules/jobs, track what is 
-        running, assign workers if needed, etc.
+        Start execution of collection modules
+
+        This functions only purpose is to take a module name as input, verify that the module
+        exists, find the correct function from the Module() class and then execute. There are
+        various checks to ensure only valid module names are being passed up until this point,
+        so any input we receive here should be valid.
+
         """
         if self.module in reactor.module.keys() and module not in self.running:
             reactor.status('info', 'arcreactor', 'starting collection module %s' % self.module)
@@ -101,45 +116,67 @@ class Jobs:
 
     def kill_all(self):
         """
-        this function will safely kill all running jobs.       
-        should be registered as an atexit function when complete.
+        Safely kill all running and queued jobs.
+
+        Ensures safe shutdown of ArcReactor jobs. This function is also registered as an
+        atexit function so it will be called everytime ArcReactor exits - whether by user
+        intervention or signal interrupts.
+
         """
+        if len(job_stats) > 0:
+            for self.job in job_stats.keys():
+                reactor.status('info', 'arcreactor', 'killing %s' % self.job)
+                if self.job in self.running or self.queue:
+                    self.queue[self.job].stop()
+                    job_stats.remove(job)
+                    return True
+        else:
+            reactor.status('info', 'arcreactor', 'no running jobs')
+            return False
+
 
     def kill_job(self, job):
-        """
-        this function will safely kill an individual job
-        """
+        """ Safely kill a specific running or queued job. """
+        if job in job_stats.keys():
+            reactor.status('info', 'arcreactor', 'stopping %s' % job)
+            if job in self.running or self.queue:
+                self.queue[job].stop()
+                job_stats.remove(job)
+                return True
+        reactor.status('info', 'arcreactor', '%s does not seem to exist' % job)
+        return False
 
     def get_stats(self, type='all'):
-        # check if we have any jobs running or paused
+        """
+        Gather statistics on running and queued jobs.
+
+        Jobs.get_stats() interacts with the job_stats hash to pull down information
+        on running, paused and queued jobs. This function will only be called when the
+        user passes the console comamnd 'info tasks'. 
+
+        """
         if len(job_stats) > 0:
             if type == 'all':
-                # iterate through all the keys and nested key/value pairs
-                for j in job_stats.keys():
-                    print('\n%s => ' % j)
-                    for key, value in job_stats[j].iteritems():
-                        print('%s:  \t%s' % (key, value))
-            # check if non-standard 'type' is in the first set of keys
+                for self.job_title in job_stats.keys():
+                    print('\n%s => ' % self.job_title)
+                    for self.key, self.value in job_stats[self.title].iteritems():
+                        print('{0:12}: \t {1:16}'.format(self.key, self.value))
             elif type in job_stats.keys():
                 print('\n%s => ' % type)
-                # iterate through the key/value pairs for that job type
-                for key, value in job_stats[type].iteritems():
-                    print('%s:  \t%s' % (key, value))
+                for self.key, self.value in job_stats[type].iteritems():
+                    print('{0:12}: \t {1:16}'.format(self.key, self.value))
             else:
                 reactor.status('info', 'arcreactor', 'cannot find job %s' % type)
         else:
-            reactor.status('info', 'arcreactor', 'no running jobs')
+            reactor.status('info', 'arcreactor', 'no running or queued jobs')
 
 
 class Module:
     def __init__(self):
-        # this entire class is for interacting with the collection modules
         self.running = 0
         self.queued = 0
 
     def run_knownbad(self):
-        # launch the knownbad.py module
-        # TODO: split malicious host and ip address sources/events
         jobs_stats['knownbad'] = {
             'status': 'running',
             'started': str(datetime.now()).split('.')[0],
@@ -147,7 +184,6 @@ class Module:
             'events': 0
         }
         if knownbad.load_sources():
-            # iterate through loaded sources
             for src in knownbad.sources:
                 job_stats['knownbad'] = { 'message': 'gathering data from sources' }
                 self.host, self.source = knownbad.gather_data(src)
@@ -155,7 +191,6 @@ class Module:
                     job_stats['knownbad'] = { 'message': 'sending syslog events' }
                     self.cef = 'CEF:0|OSINT|ArcReactor|1.0|100|Known Malicious Host|1|src=%s msg=%s' % (self.host, self.source)
                     reactor.send_syslog(self.cef)
-                    # add one to the event counter per syslog event sent
                     job_stats['knownbad'] = { 'events': job_stats['knownbad']['events'] + 1 }
             job_stats['knownbad'] = { 'status': 'finished', 'message': 'finished successfully', 'ended': str(datetime.now()).split('.')[0] }
         job_stats['knownbad'] = { 'message': 'finished with errors', 'ended': str(datetime.now()).split('.')[0] }
@@ -171,14 +206,6 @@ class Module:
         if pastebin.load_words():
             job_stats['pastebin'] = { 'message': 'collecting post archive' }
             pastebin.gather_archive()
-            """
-            this loop is needed due of an odd problem with the requests for post content.
-            we collect 250 posts at a time from the archive, but during testing the search
-            would stop half-way through the queued posts. collect 250, stop at 125, re-run
-            with the remaining 125, stop at ~63 and so on. i am not sure why this happens. 
-            to fix this, we set a loop that forces the gather_content/search_raw functions
-            to execute until the post queue is all the way down to zero.
-            """
             if len(pastebin.queue) > 0:
                 for post in pastebin.queue:
                     job_stats['pastebin'] = { 'message': 'searching post %s' % post }
@@ -194,13 +221,6 @@ class Module:
         job_stats['pastebin'] = { 'status': 'finished', 'message': 'finished with errors', 'ended': str(datetime.now()).split('.')[0] }
 
     def run_otx(self):
-        # run the otx.py module.
-        # this module is very simple as it has only a single function
-        # i would include the function here but i'd like to keep to the
-        # standard of separating each module from back-end as much as possible.
-        # TODO: split every 500-1000 entries and assign worker per entry group
-        #       this might speed up the event sending, since we have alot of data from
-        #       the otx rep db.
         reactor.status('info', 'otx', 'launching otx module')
         job_stats['otx'] = {
             'status': 'running',

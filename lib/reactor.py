@@ -76,7 +76,7 @@ def start_logger():
                         datefmt='%H:%M:%S', level=logging.DEBUG)
         return True
     else:
-        status('error', 'arcreactor', 'log file does not exist.')
+        status('warn', 'arcreactor', 'log file does not exist.')
         return False
 
 def signal_handler(signal, frame):
@@ -86,7 +86,7 @@ def load_keywords(file_path):
     # basic function for loading all keyword based config files
     file_data = []
     if os.path.exists(file_path) is False:
-        status('error', 'arcreactor', 'unable to load %s' % file_path)
+        status('warn', 'arcreactor', 'unable to load %s' % file_path)
         return False
     status('info', 'arcreactor', 'loading contents of %s' % file_path)
     f = open(file_path, 'rb')
@@ -117,7 +117,7 @@ def load_sources(file_path):
     # basic function for loading all www source config files
     file_data = []
     if os.path.exists(file_path) is False:
-        status('error', 'arcreactor', 'unable to load %s' % file_path)
+        status('warn', 'arcreactor', 'unable to load %s' % file_path)
         return False
     status('info', 'arcreactor', 'loading contents of %s' % file_path)
     f = open(file_path, 'rb')
@@ -141,19 +141,31 @@ def status(level, module, message):
         print('[~] %s' % msg)
         logging.info(msg)
 
+def json_request(url):
+    try:
+        headers = {'User-Agent': 'ArcReactor - 1.0 (https://github.com/ohdae/arcreactor)'}
+        request = requests.get(url, headers=headers)
+        if request.status_code == 200:
+            return request.json
+        else:
+            status('warn', 'arcreactor', 'http request failed for url %s. returned status code %s' % (url, request.status_code))
+            return None
+    except:
+        status('warn', 'arcreactor', 'http request failed for url %s' % url)
+        return None
+
 def http_request(url):
     try:
-        headers = { 'User-Agent': ''}
-        headers = {'content-type': 'application/json'}
-        request = requests.get(url)
+        headers = {'User-Agent': 'ArcReactor - 1.0 (https://github.com/ohdae/arcreactor)'}
+        request = requests.get(url, headers=headers)
         if request.status_code == 200:
             return request.content
         else:
             status('warn', 'arcreactor', 'http request failed for url %s. returned status code %s' % (url, request.status_code))
-            return False
+            return None
     except:
         status('warn', 'arcreactor', 'http request failed for url %s' % url)
-        return False
+        return None
 
 def send_syslog(message):
     # create socket for sending syslog events

@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 #
-# part of the ArcReactor application
-# http://github.com/ohdae/ArcReactor
-#
 # 'Known Bad' collection module
-# this module reads a list of public
-# sources from the sources.cfg file
-# and then scrapes those websites for
-# IP addresses and domain names. these
-# collected hosts are sent via syslog
-# to the ArcSight ESM system in our config
+# part of ArcReactor
+#
+# https://github.com/ohdae/arcreactor
 #
 
-import requests
-import os, re
 import reactor
+import re
 
 sources = []
 
@@ -33,13 +26,14 @@ def load_sources():
 def gather_data(source):
     try:
         reactor.status('info', 'known bad', 'retrieving hosts from %s' % source)
-        raw = requests.get(source).content
-        data = re.findall(ip_regex, raw)
-        if data == "":
-            data = re.findall(dom_regex, raw)
-        return data, source
+        raw = reactor.http_request(source)
+        if raw is not None:
+            data = re.findall(ip_regex, raw)
+            if data == "":
+                data = re.findall(dom_regex, raw)
+            return data, source
     except:
-        reactor.satus('error', 'known bad', 'failed to retrieve hosts from %s' % source)
+        reactor.satus('warn', 'known bad', 'failed to retrieve hosts from %s' % source)
 
 
 
