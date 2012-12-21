@@ -13,66 +13,57 @@
 
 import os, sys
 import commands
-import atext
+#import atexit
 from datetime import datetime
-from multiprocessing import Process, Queue
-from Queue import *
+from Queue import Queue
+import threading
 import reactor
 import pastebin
 import otx
 import knownbad
+
 #import exploits
 #import twitter
 #import facebook
 #import reddit
 #import kippo
 
-"""
-this module is under heavy development.
-    - receive command from console.py interaction
-    - determine which type of command we received
-        * module execution (start, stop, data)
-        * configuration (config *) <- these might go somewhere else
-        * job management (info tasks, info reactor, etc)
 
-    * if we get a module execution command:
-        - create new job/workers to handle execution of that module
-           * we can either send to bg and continue to interact w/ console
-            or just run it, watch progress and wait until complete
-        - job + reactor stats are updated to reflect mod being exec'd 
-        - continue to update stats along the way
-        - verify successful completion
-        - remove job from running list and free up workers
-    * configuration commands can be a simple ConfigParser function to update
-      our cfg's and reload the files
-    * job management stats are updated from the module executions so we simply
-      read and print the stats.
-      keep track of: running, status, time started/ended, total events sent,
-      events sent per mod, format usage, syslog info, etc. 
-
-TODO:
-    - job clean-up functions
-    - command receive function
-    - build job execution queue
-    - move over finished multithreading functions (testing/dispatch/multi.py)
-    - standardize data output from modules
-"""
 
 job_stats = {}
-"""
-job_stats keeps track of which module is doing what. 
-this hash is also used when we pull and output the job statistics using the 'info' cmd. 
-example:
-job_stats = {
-    'pastebin': {
-        'status': 'running',
-        'message': 'retrieving newest archive',
-        'started': '2012-12-16 12:34:20',
-        'ended': '',
-        'events': 0,
-    }
-}
-"""
+#job_stats keeps track of which module is doing what. 
+#this hash is also used when we pull and output the job statistics using the 'info' cmd. 
+#example:
+#job_stats = {
+#    'pastebin': {
+#        'status': 'running',
+#        'message': 'retrieving newest archive',
+#        'started': '2012-12-16 12:34:20',
+#        'ended': '',
+#        'events': 0,
+#    }
+#}
+
+def receive(command):
+    if command.startswith('start'):
+        module = command.split(' ')[1]
+        Jobs.start_module(module)
+    #elif command.startswith('kill'):
+    #    task = command.split(' ')[1]
+    #    if task == 'all':
+    #        Jobs.kill_all()
+    #    elif task in reactor.modules.keys():
+    #        Jobs.kill_job(task)
+    #    else:
+    #        reactor.status('warn', 'arcreactor', '%s is not a valid option')
+    elif command == 'info tasks':
+        Jobs.get_stats()
+    elif command.startswith('cfg'):
+        conf = command.split(' ')[1]
+        Config.manage(conf)
+    else:
+        reactor.status('warn', 'arcreactor', '%s is not a valid command')
+
 
 class Jobs:
     def __init__(self):
@@ -90,7 +81,6 @@ class Jobs:
 
         """
         self.running = []
-        self.queue = Queue()
 
     def start_module(self, module):
         """
@@ -102,49 +92,59 @@ class Jobs:
         so any input we receive here should be valid.
 
         """
-        if self.module in reactor.module.keys() and module not in self.running:
-            reactor.status('info', 'arcreactor', 'starting collection module %s' % self.module)
-            if self.module == 'pastebin':
+        if module in self.running:
+            arcreactor.status('info', 'arcreactor', 'collection module %s is all ready running' % module)
+        
+        elif module in reactor.modules.keys():
+            if module == 'all':
+                for self.name in reactor.modules.keys():
+                    reactor.statux('info', 'arcreactor', 'starting collection module %s' % module)
+                    self.running.append(self.name)
                 Module.run_pastebin()
-            elif self.module == 'otx':
+                Module.run_knownbad()
                 Module.run_otx()
-            elif self.module == 'knownbad':
+            elif module == 'pastebin':
+                Module.run_pastebin()
+            elif module == 'otx':
+                Module.run_otx()
+            elif module == 'knownbad':
                 Module.run_knownbad()
             else:
-                pass
-
-
-    def kill_all(self):
-        """
-        Safely kill all running and queued jobs.
-
-        Ensures safe shutdown of ArcReactor jobs. This function is also registered as an
-        atexit function so it will be called everytime ArcReactor exits - whether by user
-        intervention or signal interrupts.
-
-        """
-        if len(job_stats) > 0:
-            for self.job in job_stats.keys():
-                reactor.status('info', 'arcreactor', 'killing %s' % self.job)
-                if self.job in self.running or self.queue:
-                    self.queue[self.job].stop()
-                    job_stats.remove(job)
-                    return True
+                reactor.status('warn', 'arcreactor', '%s is not a valid collection module' % module)
         else:
-            reactor.status('info', 'arcreactor', 'no running jobs')
-            return False
+            reactor.status('warn', 'arcreactor', '%s is not a valid collection module' % module)
+
+    #def kill_all(self):
+    #    """
+    #    Safely kill all running and queued jobs.
+    #
+    #    Ensures safe shutdown of ArcReactor jobs. This function is also registered as an
+    #    atexit function so it will be called everytime ArcReactor exits - whether by user
+    #    intervention or signal interrupts.
+    #
+    #    """
+    #    if len(job_stats) > 0:
+    #        for self.job in job_stats.keys():
+    #            reactor.status('info', 'arcreactor', 'killing %s' % self.job)
+    #            if self.job in self.running or self.queue:
+    #                self.queue[self.job].stop()
+    #                job_stats.remove(job)
+    #                return True
+    #    else:
+    #        reactor.status('info', 'arcreactor', 'no running jobs')
+    #        return False
 
 
-    def kill_job(self, job):
-        """ Safely kill a specific running or queued job. """
-        if job in job_stats.keys():
-            reactor.status('info', 'arcreactor', 'stopping %s' % job)
-            if job in self.running or self.queue:
-                self.queue[job].stop()
-                job_stats.remove(job)
-                return True
-        reactor.status('info', 'arcreactor', '%s does not seem to exist' % job)
-        return False
+    #def kill_job(self, job):
+    #    """ Safely kill a specific running or queued job. """
+    #    if job in job_stats.keys():
+    #        reactor.status('info', 'arcreactor', 'stopping %s' % job)
+    #        if job in self.running or self.queue:
+    #            self.queue[job].stop()
+    #            job_stats.remove(job)
+    #            return True
+    #    reactor.status('info', 'arcreactor', '%s does not seem to exist' % job)
+    #    return False
 
     def get_stats(self, type='all'):
         """
@@ -233,6 +233,9 @@ class Module:
             jobs_stats['otx'] = {'events': otx.count }
         else:
             job_stats['otx'] = { 'status': 'finished', 'message': 'finished with errors', 'ended': str(datetime.now()).split('.')[0] }
+
+
+
 
 
 

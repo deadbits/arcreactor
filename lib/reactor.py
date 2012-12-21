@@ -42,7 +42,6 @@ modules = {
     'malware': 'scrape public sources for known malicious websites, exploit kit domains, phishing domains, malware file hashes and other malware related information'
 }
 
-# define our config parser
 config = ConfigParser.ConfigParser()
 
 ascii = '''

@@ -49,9 +49,9 @@ help = {
     },
     'collection': {
         'start all': 'start all collection modules',
-        'stop all': 'stop all running collection modules',
+        #'stop all': 'stop all running collection modules',
         'start <module>': 'launch selected module',
-        'stop <module>': 'stop selected module',
+        #'stop <module>': 'stop selected module',
         'dashboard': 'start the web dashboard [experimental]'
     }
 }
@@ -109,12 +109,6 @@ class Session(object):
         reactor.status('info', 'arcreactor', 'shutting down ArcReactor console')
         sys.exit(0)
 
-    def check_command(self, cmd):
-        for self.title in help.keys():
-            if cmd in help[self.title].keys():
-                return True
-        return False
-
     def pre_command(self, cmd):
         """
         Handle basic functions before we send command to dispatch.
@@ -142,7 +136,7 @@ class Session(object):
         elif cmd == 'clear': 
             os.system('clear')
         elif cmd.startswith('exec'):
-            self.exec_output = commands.getout(' '.join(cmd.split(' ')[1:]))
+            self.exec_output = commands.getoutput(' '.join(cmd.split(' ')[1:]))
             print self.exec_output
         elif cmd == 'keywords':
             if len(keywords) > 0:
@@ -165,6 +159,17 @@ class Session(object):
         else:
             dispatch.receive(cmd)
 
+    def check_command(self, args):
+        try:
+            cmd, arg = args.split(' ')
+        except:
+            cmd = args
+
+        for title in help.keys():
+            if cmd in help[title].keys():
+                return True
+        return False
+
     def console(self):
         print reactor.ascii
         print('Welcome to the ArcReactor console!')
@@ -177,8 +182,8 @@ class Session(object):
 
             if self.check_command(cmd):
                 self.pre_command(cmd)
-            else:
-                print('[!] %s is not a valid command. type `help` for assistance')
+
+
             
 
 
